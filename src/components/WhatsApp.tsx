@@ -9,9 +9,9 @@ import { askAI, genImage } from "@/lib/ai.functions";
 import doodle from "@/assets/wa-doodle.jpg";
 
 type Msg = {
-  id: string; role: "user" | "assistant"; text?: string | undefined; sticker?: string; image?: string;
-  audio?: string; transcript?: string; replyTo?: string; reactions?: string[]; time: number;
-  suggestions?: string[]; loadingImage?: boolean;
+  id: string; role: "user" | "assistant"; text?: string | undefined; sticker?: string | undefined; image?: string | undefined;
+  audio?: string | undefined; transcript?: string | undefined; replyTo?: string | undefined; reactions?: string[] | undefined; time: number;
+  suggestions?: string[] | undefined; loadingImage?: boolean | undefined;
 };
 type Chat = { id: string; title: string; messages: Msg[]; updated: number };
 

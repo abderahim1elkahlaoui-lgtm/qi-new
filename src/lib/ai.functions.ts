@@ -34,7 +34,7 @@ async function failMsg(res: Response) {
 }
 
 export const askAI = createServerFn({ method: "POST" })
-  .inputValidator((d: { messages: Msg[]; extraSystem?: string }) => d)
+  .inputValidator((d: { messages: Msg[]; extraSystem?: string | undefined }) => d)
   .handler(async ({ data }) => {
     const res = await fetch(`${GATEWAY}/chat/completions`, {
       method: "POST",
