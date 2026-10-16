@@ -9,7 +9,7 @@ import { askAI, genImage } from "@/lib/ai.functions";
 import doodle from "@/assets/wa-doodle.jpg";
 
 type Msg = {
-  id: string; role: "user" | "assistant"; text?: string; sticker?: string; image?: string;
+  id: string; role: "user" | "assistant"; text?: string | undefined; sticker?: string; image?: string;
   audio?: string; transcript?: string; replyTo?: string; reactions?: string[]; time: number;
   suggestions?: string[]; loadingImage?: boolean;
 };
@@ -120,7 +120,7 @@ export default function WhatsApp() {
   function onFile(f: File) {
     const r = new FileReader();
     r.onload = () => {
-      if (f.type.startsWith("image/")) send({ image: r.result as string, text: input || undefined });
+      if (f.type.startsWith("image/")) send(input ? { image: r.result as string, text: input } : { image: r.result as string });
       else f.text().then((t) => send({ text: `📄 ${f.name}\n\n${t.slice(0, 15000)}` }));
     };
     r.readAsDataURL(f);
@@ -268,7 +268,7 @@ export default function WhatsApp() {
               </div>
               {chat.messages.map((m, i) => {
                 const out = m.role === "user";
-                const first = i === 0 || chat.messages[i - 1].role !== m.role;
+                const first = i === 0 || chat.messages[i - 1]!.role !== m.role;
                 const quoted = m.replyTo ? chat.messages.find((q) => q.id === m.replyTo) : undefined;
                 const bare = (m.sticker && !m.text && !m.image) ;
                 return (
@@ -295,7 +295,7 @@ export default function WhatsApp() {
                             </div>
                           )}
                           {m.text && (
-                            <div dir={rtl(m.text)} className="prose-sm max-w-none whitespace-pre-wrap break-words pr-14 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-0.5 [&_ul]:list-disc [&_ul]:pl-5">
+                            <div dir={rtl(m.text)} className={`prose-sm max-w-none whitespace-pre-wrap break-words ${rtl(m.text) === "rtl" ? "pl-16" : "pr-16"} [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-0.5 [&_ul]:list-disc [&_ul]:pl-5`}>
                               {out ? m.text : <ReactMarkdown>{m.text}</ReactMarkdown>}
                             </div>
                           )}

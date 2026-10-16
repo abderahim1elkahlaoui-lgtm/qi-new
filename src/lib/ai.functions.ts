@@ -16,7 +16,7 @@ type Part = { type: "text"; text: string } | { type: "image_url"; image_url: { u
 type Msg = { role: "user" | "assistant" | "system"; content: string | Part[] };
 
 function headers() {
-  const key = process.env.LOVABLE_API_KEY;
+  const key = process.env['LOVABLE_API_KEY'];
   if (!key) throw new Error("AI key missing");
   return {
     "Content-Type": "application/json",
