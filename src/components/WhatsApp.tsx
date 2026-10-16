@@ -185,7 +185,7 @@ export default function WhatsApp() {
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-background text-foreground" onClick={() => { setMsgMenu(null); setMenu(false); setWallMenu(false); setReactFor(null); }}>
       {/* Sidebar */}
-      <aside className={`${chat ? "hidden md:flex" : "flex"} w-full md:w-[380px] shrink-0 flex-col border-r bg-wa-panel`}>
+<aside className={`${chat ? "hidden md:flex" : "flex"} relative w-full md:w-[380px] shrink-0 flex-col border-r bg-wa-panel`}>
         <header className="flex h-[60px] items-center justify-between bg-wa-header px-4">
           <div className="flex items-center gap-3">
             <Avatar />
@@ -220,7 +220,16 @@ export default function WhatsApp() {
             );
           })}
         </div>
-      </aside>
+      </aside {/* الزر العائم الأخضر لواتساب - محادثة جديدة أسفل اليسار */}
+<button
+  onClick={newChat}
+  title="محادثة جديدة"
+  className="absolute bottom-5 left-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-all duration-200 hover:scale-105 hover:brightness-105 active:scale-95"
+  style={{ boxShadow: "0 4px 14px rgba(37, 211, 102, 0.45)" }}
+>
+  <Plus size={28} strokeWidth={2.5} />
+</button>
+>
 
       {/* Chat */}
       {!chat ? (
