@@ -57,6 +57,7 @@ export default function WhatsApp() {
   const [reactFor, setReactFor] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
+  const [call, setCall] = useState<null | "voice" | "video">(null);
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const recRef = useRef<{ mr?: MediaRecorder; sr?: any; transcript: string; chunks: Blob[] }>({ transcript: "", chunks: [] });
@@ -190,8 +191,8 @@ export default function WhatsApp() {
       {/* Sidebar */}
 <aside className={`${chat ? "hidden md:flex" : "flex"} relative w-full md:w-[380px] shrink-0 flex-col border-r bg-wa-panel`}>
         <header className="flex h-[60px] items-center justify-between bg-wa-header px-4">
-          <div className="flex items-center gap-3">
-            <Avatar />
+          <div className="flex items-center gap-2">
+            <img src={qiLogo.url} alt="QI New" className="h-9 w-9 rounded-full object-cover" />
             <span className="text-lg font-semibold text-wa-green">QI New</span>
           </div>
           <div className="flex gap-1 text-wa-icon">
@@ -257,6 +258,8 @@ export default function WhatsApp() {
               <div className="text-xs text-muted-foreground">{typing ? <span className="text-wa-green">typing…</span> : "online"}</div>
             </div>
             <div className="relative flex gap-1 text-wa-icon">
+              <IconBtn title="Video call" onClick={() => setCall("video")}><Video size={20} /></IconBtn>
+              <IconBtn title="Voice call" onClick={() => setCall("voice")}><Phone size={19} /></IconBtn>
               <IconBtn title="Wallpaper" onClick={(e) => { e.stopPropagation(); setWallMenu(!wallMenu); }}><Wallpaper size={20} /></IconBtn>
               <IconBtn onClick={(e) => { e.stopPropagation(); setMenu(!menu); }}><MoreVertical size={20} /></IconBtn>
               {wallMenu && (
