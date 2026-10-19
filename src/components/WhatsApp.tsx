@@ -220,16 +220,14 @@ export default function WhatsApp() {
             );
           })}
         </div>
-      </aside {/* الزر العائم الأخضر لواتساب - محادثة جديدة أسفل اليسار */}
-<button
-  onClick={newChat}
-  title="محادثة جديدة"
-  className="absolute bottom-5 left-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-all duration-200 hover:scale-105 hover:brightness-105 active:scale-95"
-  style={{ boxShadow: "0 4px 14px rgba(37, 211, 102, 0.45)" }}
->
-  <Plus size={28} strokeWidth={2.5} />
-</button>
->
+        <button
+          onClick={newChat}
+          title="محادثة جديدة"
+          className="absolute bottom-5 left-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-wa-green text-primary-foreground shadow-xl transition-all duration-200 hover:scale-105 hover:brightness-105 active:scale-95"
+        >
+          <Plus size={28} strokeWidth={2.5} />
+        </button>
+      </aside>
 
       {/* Chat */}
       {!chat ? (
