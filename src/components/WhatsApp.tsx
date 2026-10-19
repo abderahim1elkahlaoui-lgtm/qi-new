@@ -3,7 +3,7 @@ import EmojiPicker, { Theme, EmojiStyle } from "emoji-picker-react";
 import ReactMarkdown from "react-markdown";
 import {
   ArrowLeft, Check, CheckCheck, ChevronDown, Copy, Image as ImageIcon, Mic, MoreVertical, Paperclip,
-  Plus, Reply, Search, Send, Smile, Sticker, Trash2, Volume2, X, Lock, Wallpaper, FileText, Square, Bell, Phone, Video,
+  Plus, Reply, Search, Send, Smile, Sticker, Trash2, Volume2, X, Lock, Wallpaper, FileText, Square, Bell, Phone, Video, Camera, User,
 } from "lucide-react";
 import { askAI, genImage } from "@/lib/ai.functions";
 import { Button } from "@/components/ui/button";
@@ -59,13 +59,18 @@ export default function WhatsApp() {
   const [flash, setFlash] = useState<string | null>(null);
   const [call, setCall] = useState<null | "voice" | "video">(null);
   const [profile, setProfile] = useState(false);
+  const [userPanel, setUserPanel] = useState(false);
+  const [userPic, setUserPic] = useState<string | null>(null);
+  const [pending, setPending] = useState<{ image?: string; name: string; doc?: string } | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const camRef = useRef<HTMLInputElement>(null);
+  const picRef = useRef<HTMLInputElement>(null);
   const recRef = useRef<{ mr?: MediaRecorder; sr?: any; transcript: string; chunks: Blob[] }>({ transcript: "", chunks: [] });
 
   useEffect(() => {
     const c = load<Chat[]>("qi-chats", []);
-    setChats(c); setActiveId(c[0]?.id ?? null); setWall(load("qi-wall", "doodle")); setReady(true);
+    setChats(c); setActiveId(c[0]?.id ?? null); setWall(load("qi-wall", "doodle")); setUserPic(load<string | null>("qi-user-pic", null)); setReady(true);
   }, []);
   useEffect(() => { if (ready) save("qi-chats", chats); }, [chats, ready]);
   useEffect(() => { if (ready) save("qi-wall", wall); }, [wall, ready]);
@@ -123,10 +128,34 @@ export default function WhatsApp() {
   }
 
   function onFile(f: File) {
+    if (f.type.startsWith("image/")) {
+      const r = new FileReader();
+      r.onload = () => setPending({ image: r.result as string, name: f.name });
+      r.readAsDataURL(f);
+    } else f.text().then((t) => setPending({ name: f.name, doc: t.slice(0, 15000) }));
+  }
+
+  function submit() {
+    const t = input.trim();
+    if (pending?.image) send(t ? { image: pending.image, text: t } : { image: pending.image });
+    else if (pending?.doc !== undefined) send({ text: `📄 ${pending.name}\n\n${pending.doc}${t ? "\n\n" + t : ""}` });
+    else if (t) send({ text: t });
+    else return;
+    setPending(null);
+  }
+
+  function onUserPic(f: File) {
     const r = new FileReader();
     r.onload = () => {
-      if (f.type.startsWith("image/")) send(input ? { image: r.result as string, text: input } : { image: r.result as string });
-      else f.text().then((t) => send({ text: `📄 ${f.name}\n\n${t.slice(0, 15000)}` }));
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas"); c.width = c.height = 256;
+        const s = Math.min(img.width, img.height);
+        c.getContext("2d")!.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 256, 256);
+        const url = c.toDataURL("image/jpeg", 0.85);
+        setUserPic(url); save("qi-user-pic", url);
+      };
+      img.src = r.result as string;
     };
     r.readAsDataURL(f);
   }
@@ -196,8 +225,9 @@ export default function WhatsApp() {
             <img src={qiLogo.url} alt="QI New" className="h-9 w-9 rounded-full object-cover" />
             <span className="text-lg font-semibold text-wa-green">QI New</span>
           </div>
-          <div className="flex gap-1 text-wa-icon">
+          <div className="flex items-center gap-1 text-wa-icon">
             <IconBtn title="Notifications" onClick={() => "Notification" in window && Notification.requestPermission()}><Bell size={20} /></IconBtn>
+            <button title="My profile" onClick={(e) => { e.stopPropagation(); setUserPanel(true); }}><UserPic src={userPic} /></button>
           </div>
         </header>
         <div className="p-2">
@@ -263,10 +293,9 @@ export default function WhatsApp() {
             <div className="relative flex gap-1 text-wa-icon">
               <IconBtn title="Video call" onClick={() => setCall("video")}><Video size={20} /></IconBtn>
               <IconBtn title="Voice call" onClick={() => setCall("voice")}><Phone size={19} /></IconBtn>
-              <IconBtn title="Wallpaper" onClick={(e) => { e.stopPropagation(); setWallMenu(!wallMenu); }}><Wallpaper size={20} /></IconBtn>
               <IconBtn onClick={(e) => { e.stopPropagation(); setMenu(!menu); }}><MoreVertical size={20} /></IconBtn>
               {wallMenu && (
-                <div className="absolute right-10 top-11 z-30 grid grid-cols-3 gap-2 rounded-lg bg-popover p-3 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <div className="absolute right-0 top-11 z-30 grid grid-cols-3 gap-2 rounded-lg bg-popover p-3 shadow-xl" onClick={(e) => e.stopPropagation()}>
                   {WALLS.map((w) => (
                     <button key={w} onClick={() => setWall(w)} className={`h-14 w-14 rounded-md border-2 ${wall === w ? "border-wa-green" : "border-transparent"} ${w === "doodle" ? "wa-doodle" : w}`} style={w === "doodle" ? { backgroundImage: `url(${doodle})`, backgroundSize: "60px" } : undefined} />
                   ))}
@@ -274,9 +303,11 @@ export default function WhatsApp() {
               )}
               {menu && (
                 <div className="absolute right-0 top-11 z-30 w-56 rounded-md bg-popover py-2 text-sm text-popover-foreground shadow-xl">
+                  <MenuItem onClick={() => setProfile(true)}><Search size={16} /> Contact info & media</MenuItem>
                   <MenuItem onClick={() => send({ text: "📝 Summarize our conversation" }, "The user wants a very simple, easy summary of the whole conversation as short bullet points, in their language.")}><FileText size={16} /> Summarize chat</MenuItem>
                   <MenuItem onClick={() => send({ text: "🎨 Make an illustrative image explaining the main topic of our chat" })}><ImageIcon size={16} /> Illustrate topic</MenuItem>
-                  <MenuItem onClick={() => updateChat(chat.id, (x) => ({ ...x, messages: [] }))}><Trash2 size={16} /> Clear chat</MenuItem>
+                  <MenuItem onClick={(e) => { e?.stopPropagation(); setMenu(false); setWallMenu(true); }}><Wallpaper size={16} /> Wallpaper</MenuItem>
+                  <MenuItem onClick={() => { if (confirm("Clear this chat?")) updateChat(chat.id, (x) => ({ ...x, messages: [] })); }}><Trash2 size={16} /> Clear chat</MenuItem>
                 </div>
               )}
             </div>
