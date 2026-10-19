@@ -431,6 +431,48 @@ export default function WhatsApp() {
               </button>
             )}
           </footer>
+          {/* profile panel */}
+          {profile && (
+            <div className="absolute inset-0 z-40 flex flex-col overflow-y-auto bg-wa-panel" onClick={(e) => e.stopPropagation()}>
+              <header className="flex h-[60px] items-center gap-4 bg-wa-header px-3">
+                <IconBtn onClick={() => setProfile(false)}><X size={22} /></IconBtn>
+                <span className="font-medium">Contact info</span>
+              </header>
+              <div className="flex flex-col items-center gap-2 border-b py-6">
+                <Avatar big />
+                <h2 className="text-xl font-medium">QI New</h2>
+                <p className="text-sm text-muted-foreground">Free AI assistant — fiqh & everything</p>
+              </div>
+              <div className="border-b px-4 py-3">
+                <h3 className="mb-2 text-sm text-wa-green">Media, links and docs</h3>
+                {chat.messages.some((m) => m.image) ? (
+                  <div className="grid grid-cols-3 gap-1">
+                    {chat.messages.filter((m) => m.image).map((m) => (
+                      <img key={m.id} src={m.image} alt="" className="aspect-square cursor-pointer rounded object-cover" onClick={() => { setProfile(false); jumpTo(m.id); }} />
+                    ))}
+                  </div>
+                ) : <p className="text-sm text-muted-foreground">No media yet</p>}
+              </div>
+              <div className="px-4 py-3 text-xs text-muted-foreground">
+                <Lock size={11} className="mr-1 inline" /> Chats are stored only on this device.
+              </div>
+            </div>
+          )}
+
+          {/* call overlay */}
+          {call && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-wa-panel" onClick={(e) => e.stopPropagation()}>
+              <Avatar big />
+              <div className="text-center">
+                <h2 className="text-2xl font-medium">QI New</h2>
+                <p className="mt-1 animate-pulse text-sm text-muted-foreground">{call === "video" ? "Video" : "Voice"} calling…</p>
+              </div>
+              <p className="max-w-xs text-center text-xs text-muted-foreground">Live calls aren't available — QI answers by chat only.</p>
+              <button onClick={() => setCall(null)} className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-xl">
+                <Phone size={24} className="rotate-[135deg]" />
+              </button>
+            </div>
+          )}
         </section>
       )}
     </div>
