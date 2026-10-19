@@ -58,6 +58,7 @@ export default function WhatsApp() {
   const [recording, setRecording] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [call, setCall] = useState<null | "voice" | "video">(null);
+  const [profile, setProfile] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const recRef = useRef<{ mr?: MediaRecorder; sr?: any; transcript: string; chunks: Blob[] }>({ transcript: "", chunks: [] });
@@ -252,11 +253,13 @@ export default function WhatsApp() {
         <section className="relative flex flex-1 flex-col">
           <header className="z-10 flex h-[60px] items-center gap-3 bg-wa-header px-3">
             <IconBtn className="md:hidden" onClick={() => setActiveId(null)}><ArrowLeft size={22} /></IconBtn>
-            <Avatar />
-            <div className="flex-1 leading-tight">
-              <div className="font-medium">QI New</div>
-              <div className="text-xs text-muted-foreground">{typing ? <span className="text-wa-green">typing…</span> : "online"}</div>
-            </div>
+            <button onClick={(e) => { e.stopPropagation(); setProfile(true); }} className="flex flex-1 items-center gap-3 text-left">
+              <Avatar />
+              <div className="flex-1 leading-tight">
+                <div className="font-medium">QI New</div>
+                <div className="text-xs text-muted-foreground">{typing ? <span className="text-wa-green">typing…</span> : "online"}</div>
+              </div>
+            </button>
             <div className="relative flex gap-1 text-wa-icon">
               <IconBtn title="Video call" onClick={() => setCall("video")}><Video size={20} /></IconBtn>
               <IconBtn title="Voice call" onClick={() => setCall("voice")}><Phone size={19} /></IconBtn>
