@@ -3,11 +3,13 @@ import EmojiPicker, { Theme, EmojiStyle } from "emoji-picker-react";
 import ReactMarkdown from "react-markdown";
 import {
   ArrowLeft, Check, CheckCheck, ChevronDown, Copy, Image as ImageIcon, Mic, MoreVertical, Paperclip,
-  Plus, Reply, Search, Send, Smile, Sticker, Trash2, Volume2, X, Lock, Wallpaper, FileText, Square, Bell,
+  Plus, Reply, Search, Send, Smile, Sticker, Trash2, Volume2, X, Lock, Wallpaper, FileText, Square, Bell, Phone, Video,
 } from "lucide-react";
 import { askAI, genImage } from "@/lib/ai.functions";
 import { Button } from "@/components/ui/button";
 import doodle from "@/assets/wa-doodle.jpg";
+import qiLogo from "@/assets/qi-logo.png.asset.json";
+import qiAvatar from "@/assets/qi-avatar.png.asset.json";
 
 type Msg = {
   id: string; role: "user" | "assistant"; text?: string | undefined; sticker?: string | undefined; image?: string | undefined;
@@ -55,6 +57,8 @@ export default function WhatsApp() {
   const [reactFor, setReactFor] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
+  const [call, setCall] = useState<null | "voice" | "video">(null);
+  const [profile, setProfile] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const recRef = useRef<{ mr?: MediaRecorder; sr?: any; transcript: string; chunks: Blob[] }>({ transcript: "", chunks: [] });
@@ -188,8 +192,8 @@ export default function WhatsApp() {
       {/* Sidebar */}
 <aside className={`${chat ? "hidden md:flex" : "flex"} relative w-full md:w-[380px] shrink-0 flex-col border-r bg-wa-panel`}>
         <header className="flex h-[60px] items-center justify-between bg-wa-header px-4">
-          <div className="flex items-center gap-3">
-            <Avatar />
+          <div className="flex items-center gap-2">
+            <img src={qiLogo.url} alt="QI New" className="h-9 w-9 rounded-full object-cover" />
             <span className="text-lg font-semibold text-wa-green">QI New</span>
           </div>
           <div className="flex gap-1 text-wa-icon">
@@ -249,12 +253,16 @@ export default function WhatsApp() {
         <section className="relative flex flex-1 flex-col">
           <header className="z-10 flex h-[60px] items-center gap-3 bg-wa-header px-3">
             <IconBtn className="md:hidden" onClick={() => setActiveId(null)}><ArrowLeft size={22} /></IconBtn>
-            <Avatar />
-            <div className="flex-1 leading-tight">
-              <div className="font-medium">QI New</div>
-              <div className="text-xs text-muted-foreground">{typing ? <span className="text-wa-green">typing…</span> : "online"}</div>
-            </div>
+            <button onClick={(e) => { e.stopPropagation(); setProfile(true); }} className="flex flex-1 items-center gap-3 text-left">
+              <Avatar />
+              <div className="flex-1 leading-tight">
+                <div className="font-medium">QI New</div>
+                <div className="text-xs text-muted-foreground">{typing ? <span className="text-wa-green">typing…</span> : "online"}</div>
+              </div>
+            </button>
             <div className="relative flex gap-1 text-wa-icon">
+              <IconBtn title="Video call" onClick={() => setCall("video")}><Video size={20} /></IconBtn>
+              <IconBtn title="Voice call" onClick={() => setCall("voice")}><Phone size={19} /></IconBtn>
               <IconBtn title="Wallpaper" onClick={(e) => { e.stopPropagation(); setWallMenu(!wallMenu); }}><Wallpaper size={20} /></IconBtn>
               <IconBtn onClick={(e) => { e.stopPropagation(); setMenu(!menu); }}><MoreVertical size={20} /></IconBtn>
               {wallMenu && (
@@ -423,6 +431,48 @@ export default function WhatsApp() {
               </button>
             )}
           </footer>
+          {/* profile panel */}
+          {profile && (
+            <div className="absolute inset-0 z-40 flex flex-col overflow-y-auto bg-wa-panel" onClick={(e) => e.stopPropagation()}>
+              <header className="flex h-[60px] items-center gap-4 bg-wa-header px-3">
+                <IconBtn onClick={() => setProfile(false)}><X size={22} /></IconBtn>
+                <span className="font-medium">Contact info</span>
+              </header>
+              <div className="flex flex-col items-center gap-2 border-b py-6">
+                <Avatar big />
+                <h2 className="text-xl font-medium">QI New</h2>
+                <p className="text-sm text-muted-foreground">Free AI assistant — fiqh & everything</p>
+              </div>
+              <div className="border-b px-4 py-3">
+                <h3 className="mb-2 text-sm text-wa-green">Media, links and docs</h3>
+                {chat.messages.some((m) => m.image) ? (
+                  <div className="grid grid-cols-3 gap-1">
+                    {chat.messages.filter((m) => m.image).map((m) => (
+                      <img key={m.id} src={m.image} alt="" className="aspect-square cursor-pointer rounded object-cover" onClick={() => { setProfile(false); jumpTo(m.id); }} />
+                    ))}
+                  </div>
+                ) : <p className="text-sm text-muted-foreground">No media yet</p>}
+              </div>
+              <div className="px-4 py-3 text-xs text-muted-foreground">
+                <Lock size={11} className="mr-1 inline" /> Chats are stored only on this device.
+              </div>
+            </div>
+          )}
+
+          {/* call overlay */}
+          {call && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-wa-panel" onClick={(e) => e.stopPropagation()}>
+              <Avatar big />
+              <div className="text-center">
+                <h2 className="text-2xl font-medium">QI New</h2>
+                <p className="mt-1 animate-pulse text-sm text-muted-foreground">{call === "video" ? "Video" : "Voice"} calling…</p>
+              </div>
+              <p className="max-w-xs text-center text-xs text-muted-foreground">Live calls aren't available — QI answers by chat only.</p>
+              <button onClick={() => setCall(null)} className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-xl">
+                <Phone size={24} className="rotate-[135deg]" />
+              </button>
+            </div>
+          )}
         </section>
       )}
     </div>
@@ -430,7 +480,13 @@ export default function WhatsApp() {
 }
 
 function Avatar({ big }: { big?: boolean }) {
-  return <div className={`flex shrink-0 items-center justify-center rounded-full bg-wa-green font-bold text-primary-foreground ${big ? "h-28 w-28 text-4xl" : "h-10 w-10 text-sm"}`}>QI</div>;
+  return (
+    <img
+      src={qiAvatar.url}
+      alt="QI New"
+      className={`shrink-0 rounded-full object-cover ${big ? "h-28 w-28" : "h-10 w-10"}`}
+    />
+  );
 }
 function IconBtn({ children, className = "", ...p }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button {...p} className={`rounded-full p-2 text-wa-icon transition hover:bg-foreground/10 ${className}`}>{children}</button>;
