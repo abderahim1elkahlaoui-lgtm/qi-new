@@ -3,11 +3,13 @@ import EmojiPicker, { Theme, EmojiStyle } from "emoji-picker-react";
 import ReactMarkdown from "react-markdown";
 import {
   ArrowLeft, Check, CheckCheck, ChevronDown, Copy, Image as ImageIcon, Mic, MoreVertical, Paperclip,
-  Plus, Reply, Search, Send, Smile, Sticker, Trash2, Volume2, X, Lock, Wallpaper, FileText, Square, Bell,
+  Plus, Reply, Search, Send, Smile, Sticker, Trash2, Volume2, X, Lock, Wallpaper, FileText, Square, Bell, Phone, Video,
 } from "lucide-react";
 import { askAI, genImage } from "@/lib/ai.functions";
 import { Button } from "@/components/ui/button";
 import doodle from "@/assets/wa-doodle.jpg";
+import qiLogo from "@/assets/qi-logo.png.asset.json";
+import qiAvatar from "@/assets/qi-avatar.png.asset.json";
 
 type Msg = {
   id: string; role: "user" | "assistant"; text?: string | undefined; sticker?: string | undefined; image?: string | undefined;
@@ -430,7 +432,13 @@ export default function WhatsApp() {
 }
 
 function Avatar({ big }: { big?: boolean }) {
-  return <div className={`flex shrink-0 items-center justify-center rounded-full bg-wa-green font-bold text-primary-foreground ${big ? "h-28 w-28 text-4xl" : "h-10 w-10 text-sm"}`}>QI</div>;
+  return (
+    <img
+      src={qiAvatar.url}
+      alt="QI New"
+      className={`shrink-0 rounded-full object-cover ${big ? "h-28 w-28" : "h-10 w-10"}`}
+    />
+  );
 }
 function IconBtn({ children, className = "", ...p }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button {...p} className={`rounded-full p-2 text-wa-icon transition hover:bg-foreground/10 ${className}`}>{children}</button>;
