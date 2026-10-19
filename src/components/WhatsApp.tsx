@@ -294,8 +294,13 @@ export default function WhatsApp() {
                 const quoted = m.replyTo ? chat.messages.find((q) => q.id === m.replyTo) : undefined;
                 const bare = (m.sticker && !m.text && !m.image) ;
                 return (
-                  <div key={m.id} id={"m-" + m.id} className={`flex ${out ? "justify-end" : "justify-start"} ${first ? "mt-3" : "mt-0.5"} ${flash === m.id ? "wa-flash rounded" : ""}`}>
-                    <div className="group relative max-w-[85%] md:max-w-[65%]" onDoubleClick={() => setReplyTo(m)}>
+                  <div key={m.id} id={"m-" + m.id} className={`flex items-start gap-2 ${out ? "flex-row-reverse" : ""} ${first ? "mt-3" : "mt-0.5"} ${flash === m.id ? "wa-flash rounded" : ""}`}>
+                    <div className="w-8 shrink-0">
+                      {first && (out
+                        ? <button onClick={(e) => { e.stopPropagation(); setUserPanel(true); }}><UserPic src={userPic} /></button>
+                        : <button onClick={(e) => { e.stopPropagation(); setProfile(true); }}><img src={qiAvatar.url} alt="QI New" className="h-8 w-8 rounded-full object-cover" /></button>)}
+                    </div>
+                    <div className="group relative max-w-[80%] md:max-w-[65%]" onDoubleClick={() => setReplyTo(m)}>
                       {bare ? (
                         <div className={`wa-pop text-[96px] leading-none ${out ? "text-right" : ""}`}>{m.sticker}
                           <div className="text-right text-[11px] text-muted-foreground">{fmt(m.time)}</div></div>
@@ -379,15 +384,22 @@ export default function WhatsApp() {
             </div>
           )}
 
-          {/* panels */}
-          {panel === "emoji" && (
-            <div className="bg-wa-header [&_.EmojiPickerReact]:!w-full">
-              <EmojiPicker theme={isDark() ? Theme.DARK : Theme.LIGHT} emojiStyle={EmojiStyle.NATIVE} onEmojiClick={(e) => setInput((v) => v + e.emoji)} width="100%" height={320} previewConfig={{ showPreview: false }} />
-            </div>
-          )}
-          {panel === "sticker" && (
-            <div className="wa-scroll grid h-[280px] grid-cols-6 gap-2 overflow-y-auto bg-wa-header p-3 md:grid-cols-10">
-              {STICKERS.map((s, i) => <button key={i} onClick={() => send({ sticker: s })} className="text-5xl transition hover:scale-110">{s}</button>)}
+          {/* emoji + sticker panel */}
+          {panel && (
+            <div className="bg-wa-header">
+              <div className="flex gap-1 border-b px-3 pt-2">
+                <button onClick={() => setPanel("emoji")} className={`rounded-t-md px-4 py-1.5 text-sm ${panel === "emoji" ? "border-b-2 border-wa-green text-wa-green" : "text-muted-foreground"}`}><Smile size={16} className="mr-1 inline" />Emoji</button>
+                <button onClick={() => setPanel("sticker")} className={`rounded-t-md px-4 py-1.5 text-sm ${panel === "sticker" ? "border-b-2 border-wa-green text-wa-green" : "text-muted-foreground"}`}><Sticker size={16} className="mr-1 inline" />Stickers</button>
+              </div>
+              {panel === "emoji" ? (
+                <div className="[&_.EmojiPickerReact]:!w-full">
+                  <EmojiPicker theme={isDark() ? Theme.DARK : Theme.LIGHT} emojiStyle={EmojiStyle.NATIVE} onEmojiClick={(e) => setInput((v) => v + e.emoji)} width="100%" height={300} previewConfig={{ showPreview: false }} />
+                </div>
+              ) : (
+                <div className="wa-scroll grid h-[280px] grid-cols-6 gap-2 overflow-y-auto p-3 md:grid-cols-10">
+                  {STICKERS.map((s, i) => <button key={i} onClick={() => send({ sticker: s })} className="text-5xl transition hover:scale-110">{s}</button>)}
+                </div>
+              )}
             </div>
           )}
 
@@ -401,6 +413,14 @@ export default function WhatsApp() {
             </div>
           )}
 
+          {pending && (
+            <div className="flex items-center gap-3 bg-wa-header px-4 pt-2">
+              {pending.image ? <img src={pending.image} alt="" className="h-16 w-16 rounded-md object-cover" /> : <div className="flex h-16 w-16 items-center justify-center rounded-md bg-foreground/5"><FileText size={28} className="text-wa-icon" /></div>}
+              <span className="flex-1 truncate text-sm text-muted-foreground">{pending.name}</span>
+              <IconBtn title="Remove" onClick={() => setPending(null)}><X size={20} /></IconBtn>
+            </div>
+          )}
+
           <footer className="flex items-end gap-2 bg-wa-header px-3 py-2">
             {recording ? (
               <div className="flex flex-1 items-center gap-3 rounded-lg bg-input px-4 py-2.5">
@@ -409,24 +429,25 @@ export default function WhatsApp() {
                 <span className="flex-1 text-sm text-muted-foreground">Recording… speak now</span>
               </div>
             ) : (
-              <>
-                <IconBtn title="Emoji" onClick={() => setPanel(panel === "emoji" ? null : "emoji")} className={panel === "emoji" ? "text-wa-green" : ""}><Smile size={24} /></IconBtn>
-                <IconBtn title="Stickers" onClick={() => setPanel(panel === "sticker" ? null : "sticker")} className={panel === "sticker" ? "text-wa-green" : ""}><Sticker size={24} /></IconBtn>
-                <IconBtn title="Attach" onClick={() => fileRef.current?.click()}><Paperclip size={22} /></IconBtn>
-                <input ref={fileRef} type="file" accept="image/*,.txt,.md,.csv,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }} />
+              <div className="flex flex-1 items-end rounded-3xl bg-input px-1">
+                <IconBtn title="Emoji & stickers" onClick={() => setPanel(panel ? null : "emoji")} className={panel ? "text-wa-green" : ""}><Smile size={22} /></IconBtn>
                 <textarea
                   rows={1} value={input} dir="auto"
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (input.trim()) send({ text: input.trim() }); } }}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
                   placeholder="Type a message"
-                  className="max-h-32 flex-1 resize-none rounded-lg bg-input px-4 py-2.5 text-[15px] outline-none placeholder:text-muted-foreground"
+                  className="max-h-32 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] outline-none placeholder:text-muted-foreground"
                 />
-              </>
+                <IconBtn title="Attach file" onClick={() => fileRef.current?.click()}><Paperclip size={20} /></IconBtn>
+                <IconBtn title="Camera" onClick={() => camRef.current?.click()}><Camera size={20} /></IconBtn>
+                <input ref={fileRef} type="file" accept="image/*,.txt,.md,.csv,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }} />
+                <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }} />
+              </div>
             )}
-            {input.trim() && !recording ? (
-              <button onClick={() => send({ text: input.trim() })} className="flex h-11 w-11 items-center justify-center rounded-full bg-wa-green text-primary-foreground"><Send size={20} /></button>
+            {(input.trim() || pending) && !recording ? (
+              <button onClick={submit} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-wa-green text-primary-foreground"><Send size={20} /></button>
             ) : (
-              <button onClick={() => (recording ? stopRec() : startRec())} className="flex h-11 w-11 items-center justify-center rounded-full bg-wa-green text-primary-foreground">
+              <button onClick={() => (recording ? stopRec() : startRec())} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-wa-green text-primary-foreground">
                 {recording ? <Send size={20} /> : <Mic size={22} />}
               </button>
             )}
@@ -452,6 +473,18 @@ export default function WhatsApp() {
                     ))}
                   </div>
                 ) : <p className="text-sm text-muted-foreground">No media yet</p>}
+              </div>
+              <div className="border-b px-4 py-3">
+                <h3 className="mb-2 text-sm text-wa-green">Conversations</h3>
+                {chats.map((c) => (
+                  <button key={c.id} onClick={() => { setActiveId(c.id); setProfile(false); }} className={`flex w-full items-center gap-3 rounded px-2 py-2 text-left hover:bg-wa-hover ${c.id === activeId ? "bg-wa-hover" : ""}`}>
+                    <Avatar />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium" dir="auto">{c.title}</div>
+                      <div className="text-xs text-muted-foreground">{c.messages.length} messages · {fmt(c.updated)}</div>
+                    </div>
+                  </button>
+                ))}
               </div>
               <div className="px-4 py-3 text-xs text-muted-foreground">
                 <Lock size={11} className="mr-1 inline" /> Chats are stored only on this device.
