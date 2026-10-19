@@ -270,6 +270,32 @@ export default function WhatsApp() {
         </Button>
       </aside>
 
+      {userPanel && (
+        <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-wa-panel md:right-auto md:w-[380px]" onClick={(e) => e.stopPropagation()}>
+          <header className="flex h-[60px] items-center gap-4 bg-wa-header px-3">
+            <IconBtn onClick={() => setUserPanel(false)}><ArrowLeft size={22} /></IconBtn>
+            <span className="font-medium">My profile</span>
+          </header>
+          <div className="flex flex-col items-center gap-3 border-b py-6">
+            <button title="Change photo" onClick={() => picRef.current?.click()} className="relative">
+              <UserPic src={userPic} big />
+              <span className="absolute bottom-1 right-1 rounded-full bg-wa-green p-2 text-primary-foreground"><Camera size={18} /></span>
+            </button>
+            <input ref={picRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onUserPic(f); e.target.value = ""; }} />
+            <div className="flex gap-2">
+              <button onClick={() => picRef.current?.click()} className="rounded-full bg-wa-green px-4 py-1.5 text-sm text-primary-foreground">{userPic ? "Change photo" : "Upload photo"}</button>
+              {userPic && <button onClick={() => { setUserPic(null); save("qi-user-pic", null); }} className="rounded-full border px-4 py-1.5 text-sm">Remove</button>}
+            </div>
+          </div>
+          <div className="border-b px-4 py-3 text-sm">
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">Conversations</span><span>{chats.length}</span></div>
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">Messages sent</span><span>{chats.reduce((n, c) => n + c.messages.filter((m) => m.role === "user").length, 0)}</span></div>
+            <div className="flex justify-between py-1"><span className="text-muted-foreground">Photos shared</span><span>{chats.reduce((n, c) => n + c.messages.filter((m) => m.image).length, 0)}</span></div>
+          </div>
+          <p className="px-4 py-3 text-xs text-muted-foreground"><Lock size={11} className="mr-1 inline" /> Your photo is saved only in this browser on this device.</p>
+        </div>
+      )}
+
       {/* Chat */}
       {!chat ? (
         <section className="hidden flex-1 flex-col items-center justify-center gap-4 border-b-[6px] border-wa-green bg-wa-header md:flex">
