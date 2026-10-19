@@ -555,8 +555,14 @@ function Avatar({ big }: { big?: boolean }) {
 function IconBtn({ children, className = "", ...p }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button {...p} className={`rounded-full p-2 text-wa-icon transition hover:bg-foreground/10 ${className}`}>{children}</button>;
 }
-function MenuItem({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+function MenuItem({ children, onClick }: { children: React.ReactNode; onClick: (e?: React.MouseEvent) => void }) {
   return <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-wa-hover">{children}</button>;
+}
+function UserPic({ src, big }: { src: string | null; big?: boolean }) {
+  const size = big ? "h-36 w-36" : "h-8 w-8";
+  return src
+    ? <img src={src} alt="Me" className={`${size} shrink-0 rounded-full object-cover`} />
+    : <span className={`${size} flex shrink-0 items-center justify-center rounded-full bg-muted text-wa-icon`}><User size={big ? 64 : 18} /></span>;
 }
 // unused import guards
 void Check; void Square;
