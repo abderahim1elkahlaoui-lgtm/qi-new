@@ -34,6 +34,7 @@
   --color-wa-out: var(--wa-out);
   --color-wa-in: var(--wa-in);
   --color-wa-green: var(--wa-green);
+  --color-wa-new-chat: var(--wa-new-chat);
   --color-wa-tick: var(--wa-tick);
   --color-wa-icon: var(--wa-icon);
   --color-wa-hover: var(--wa-hover);
@@ -72,6 +73,7 @@
   --wa-out: oklch(0.93 0.07 140);
   --wa-in: oklch(1 0 0);
   --wa-green: oklch(0.62 0.15 155);
+  --wa-new-chat: oklch(0.76 0.25 145);
   --wa-tick: oklch(0.7 0.13 230);
   --wa-icon: oklch(0.55 0.015 230);
   --wa-hover: oklch(0.96 0.003 200);

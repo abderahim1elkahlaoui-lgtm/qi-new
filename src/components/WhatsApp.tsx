@@ -6,6 +6,7 @@ import {
   Plus, Reply, Search, Send, Smile, Sticker, Trash2, Volume2, X, Lock, Wallpaper, FileText, Square, Bell,
 } from "lucide-react";
 import { askAI, genImage } from "@/lib/ai.functions";
+import { Button } from "@/components/ui/button";
 import doodle from "@/assets/wa-doodle.jpg";
 
 type Msg = {
@@ -193,7 +194,6 @@ export default function WhatsApp() {
           </div>
           <div className="flex gap-1 text-wa-icon">
             <IconBtn title="Notifications" onClick={() => "Notification" in window && Notification.requestPermission()}><Bell size={20} /></IconBtn>
-            <IconBtn title="New chat" onClick={newChat}><Plus size={22} /></IconBtn>
           </div>
         </header>
         <div className="p-2">
@@ -220,13 +220,20 @@ export default function WhatsApp() {
             );
           })}
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={newChat}
           title="محادثة جديدة"
-          className="absolute bottom-5 left-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-wa-green text-primary-foreground shadow-xl transition-all duration-200 hover:scale-105 hover:brightness-105 active:scale-95"
+          aria-label="محادثة جديدة"
+          className="absolute bottom-5 left-5 z-20 h-14 w-14 rounded-full bg-wa-new-chat text-primary-foreground shadow-md hover:bg-wa-new-chat hover:brightness-105 active:scale-95 [&_svg]:size-6"
         >
-          <Plus size={28} strokeWidth={2.5} />
-        </button>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M4 5h12v4h4v10H7l-3 3V5Z" />
+            <path className="text-wa-new-chat" stroke="currentColor" strokeWidth="1.5" d="M7 10h6M7 13h10M7 16h7" />
+            <path stroke="currentColor" strokeWidth="2" d="M19 2v6m-3-3h6" />
+          </svg>
+        </Button>
       </aside>
 
       {/* Chat */}
